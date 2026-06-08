@@ -9,3 +9,4 @@ dist/
 .venv/
 venv/
 demo/stream_data.csv
+.DS_Store
