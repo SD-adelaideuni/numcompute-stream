@@ -1,7 +1,7 @@
 """
 numcompute_stream — streaming, decision-tree-based ML framework.
 
-Extension to the Assignment 1 NumCompute toolkit with incremental (streaming)
+incremental (streaming)
 learning, decision trees, a Random Forest ensemble, and a matplotlib-based
 visualisation module. """
 
