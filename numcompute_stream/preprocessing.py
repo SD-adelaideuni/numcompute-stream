@@ -4,12 +4,9 @@ import numpy as np
 
 
 class StandardScaler:
-    """Per-feature standardisation: ``(X - mean) / scale`` with safe division.
-
-    Supports both batch ``fit`` and streaming ``partial_fit``. The streaming
-    path maintains a running mean and M2 (sum of squared deviations) per
-    feature using Welford's algorithm, so the scaler can be updated chunk by
-    chunk without storing past data.
+    """Both batch fit and incremental partial fit are supported. Incremental
+fitting computes the current mean and M2 (the sum of squares of 
+deviation) for each feature using Welford’s algorithm.
     """
 
     def __init__(self) -> None:
