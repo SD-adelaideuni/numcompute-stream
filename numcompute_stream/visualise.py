@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib
 
 # Use a non-interactive backend by default so plots work in scripts/CI.
-matplotlib.use("Agg", force=False)
 import matplotlib.pyplot as plt  # noqa: E402
 
 
