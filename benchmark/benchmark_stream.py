@@ -1,18 +1,20 @@
 """
-Streaming performance benchmark: DecisionTree vs RandomForest.
+Decision Tree Streaming Performance Benchmark.
 
-Measures, across increasing stream sizes:
-  * per-chunk training latency,
-  * cumulative (prequential) accuracy,
-  * approximate model memory footprint,
+Measurements for increasing stream lengths:
 
-for a single decision tree versus a random forest, both driven through the
-same StreamTrainer. Also contrasts a naive Python-loop class-count against the
-vectorised cumsum split search used inside the tree, to quantify the
-vectorisation speed-up the rubric asks about.
+* Per-chunk training latency,
+* Prequential accuracy,
+* Approximate size of the generated model,
 
-Run:
-    python benchmark/benchmark_stream.py
+with a decision tree model and a random forest model, the latter trained via
+the StreamTrainer, and compares the naive implementation of class counts in a
+python loop with vectorization based on cumulative sum split search within
+a tree node, to estimate the gain from vectorization asked for by the rubric.
+
+Execution command:
+python benchmark/benchmark_stream.py
+
 """
 from __future__ import annotations
 
@@ -38,7 +40,7 @@ def make_stream(n_per_class: int, n_features: int, n_classes: int, seed: int = 0
 
 
 def bench_model(name, model, X, y, classes, chunk_size):
-    """Run a model through StreamTrainer and summarise the logged history."""
+
     trainer = StreamTrainer(model, prequential=True, verbose=False)
     t0 = time.perf_counter()
     hist = trainer.run(iter_chunks(X, y, chunk_size=chunk_size), classes=classes)
@@ -55,7 +57,7 @@ def bench_model(name, model, X, y, classes, chunk_size):
 
 
 def bench_vectorisation(n: int, seed: int = 0):
-    """Naive Python-loop class counts vs vectorised np.add.at / bincount."""
+  
     rng = np.random.default_rng(seed)
     y = rng.integers(0, 5, n)
 
