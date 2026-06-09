@@ -7,16 +7,13 @@ from .utils import check_X, check_X_y
 
 
 class RandomForestClassifier:
-    """Random Forest built from streaming-capable decision trees.
+    """Built using N estimators :class:`DecisionTreeClassifier` on bootstrapped
+samples and with random subspaces per split (``max_features``).
+Class probabilities for predictions are averaged using soft voting.
 
-    Combines N :class:`DecisionTreeClassifier` estimators trained on
-    bootstrap samples with per-split feature subsampling (``max_features``).
-    Predictions use soft voting (averaged class probabilities).
-
-    Streaming is supported via ``partial_fit``: each incoming chunk is
-    bootstrapped independently per tree and passed to that tree's own
-    ``partial_fit`` (buffer + rebuild). This keeps the trees decorrelated
-    while letting the whole forest adapt as data arrives.
+Streaming is achieved using the ``partial_fit`` method, where each chunk
+of the stream is bootstrapped separately per estimator and then fed to the
+estimator-specific ``partial_fit`` (buffer + rebuilding).
 
     Parameters
     ----------
