@@ -1,15 +1,16 @@
 # numcompute_stream
 
-A streaming, decision-tree-based machine learning framework built **only** on
-NumPy and matplotlib. It extends the Assignment 1 *NumCompute* toolkit with
-incremental (online) learning: every component can be updated chunk-by-chunk
-via `partial_fit` / `update`, so it learns from data streams that never fit in
-memory all at once.
+Streaming machine learning framework using decision trees based solely on
+NumPy and matplotlib. Extension of the Assignment 1 library with
+online learning, i.e. the ability to update all components chunk by chunk
+using `partial_fit`/`update` and train on infinite streams of data that do not
+fit into memory.
 
-The framework provides streaming preprocessing, streaming descriptive
-statistics and metrics, a from-scratch decision tree, a Random Forest
-ensemble, a pipeline that chains them, an orchestrator that drives and logs
-streaming training, and a small visualisation module.
+The framework supports streaming data pre-processing,
+calculation of streaming metrics and statistics, implementation of a decision
+tree classifier from scratch, Random Forest ensemble,
+pipeline connecting them together, orchestrating their streaming training, and a
+simple visualization library.
 
 ---
 
@@ -90,28 +91,28 @@ plots.
 
 ## How streaming trees work (design note)
 
-A fully incremental tree (e.g. a Hoeffding tree) is out of scope for this
+A fully incremental tree (like a Hoeffding tree) is not covered in this assignment.
 assignment. Instead, `partial_fit` uses a **mini-batch retrain** strategy: each
-incoming chunk is appended to a bounded buffer (`max_buffer`), and the tree is
-rebuilt on the accumulated buffer. This is a deliberate, documented trade-off:
+A buffer of a fixed maximum size (max_buffer) is appended by each incoming chunk of data. The entire buffer is then used to retrain the tree.
+we “retrain” from chunk to chunk, rebuild the tree from the combined chunk buffer.
 
-- **Pros:** correct, stable, easy to reason about; predictions always reflect
-  all retained data; splitting logic stays simple and vectorised.
-- **Cons:** per-chunk cost grows with the buffer until it saturates at
-  `max_buffer`. The benchmark below shows this clearly.
+- **Pros:** correct, stable, easy to reason about; predictions always reflect all retained data; splitting logic stays simple and vectorised.
+all retained data; splitting logic stays simple and vectorised.
+- **Cons:** the cost of retraining the tree for a chunk increases with the size of the buffer up to the size of the buffer when it is full, as specified by the max_buffer size.
+`max_buffer`. The benchmark below shows this clearly.
 
-The Random Forest applies the same idea per tree, giving each tree an
-independent bootstrap of every chunk so the ensemble stays decorrelated.
+The Random Forest applies the same idea per tree, by independently bootstrapping every chunk for every tree in the ensemble.
+each tree in the Random Forest gets an independent bootstrap of every chunk in that dataset, so the predictions from the trees in the ensemble remain decorrelated..
 
 ---
 
 ## Streaming metrics
 
 `StreamTrainer` evaluates **prequentially** (test-then-train): each chunk is
-predicted *before* it is learned from, so logged accuracy is an honest estimate
+predicted before it is used to train the model, thus providing an accurate estimate of performance on unseen data.
 of performance on unseen data. The logged `history_` always contains `chunk`,
 `n_samples`, `time_sec`, `model_mb`, `cumulative_accuracy`, plus one key per
-configured metric (default: accuracy, precision, recall, F1 — all macro).
+configured metric (e.g. accuracy, precision, recall, F1 — all macro).
 
 ---
 
@@ -135,7 +136,7 @@ voting forest of 15 trees; representative run):
 | 5,000 | DecisionTree | 1.000 | ~1.19 s | ~0.42 MB |
 | 5,000 | RandomForest | 1.000 | ~3.72 s | ~6.30 MB |
 
-The forest costs roughly an order of magnitude more compute and memory than a
+The forest is about an order of magnitude compute and memory as the trees.
 single tree (it *is* 15 trees), and per-chunk time rises as the retrain buffer
 grows — exactly the documented mini-batch-retrain trade-off.
 
@@ -158,9 +159,10 @@ pip install -e ".[dev]"
 pytest
 ```
 
-The suite contains **81 tests** across preprocessing, stats, metrics, tree,
-ensemble, pipeline, stream, io and visualise. Streaming components are checked
-for *numerical agreement with their batch equivalents* (e.g. streaming
+The suite contains 40 tests organized in folders for preprocessing, stats, metrics, tree, ensemble, pipeline, stream, io and visualise.
+All of the streaming components (preprocessing, stats, metrics, tree, ensemble,
+pipeline, stream, io and visualise) are tested.
+for *numerical agreement with their batch equivalents* (e.g. streaming `StandardScaler` mean and std values against the full-batch computation for a `StandardScaler` against a `StreamingStats` variance against a full-batch computation for ).
 `StandardScaler` mean/std and `StreamingStats` variance match a full-batch
 computation exactly), alongside error-path and edge-case tests.
 
